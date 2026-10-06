@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rose Buds English School - GK Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #10b981; /* Emerald */
+            --secondary: #f59e0b; /* Amber */
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-main: #ffffff;
+        }
+
+        body {
+            background: linear-gradient(135deg, #064e3b 0%, #022c22 100%);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            border-radius: 1.5rem;
+        }
+
+        .glass-input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .glass-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            transition: transform 0.2s, box-shadow 0.2s;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .btn-option:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .btn-option.selected {
+            background: linear-gradient(to right, #10b981, #f59e0b);
+            border-color: transparent;
+        }
+
+        .btn-option.correct {
+            background: linear-gradient(to right, #059669, #10b981);
+            border-color: transparent;
+        }
+
+        .btn-option.wrong {
+            background: linear-gradient(to right, #ef4444, #dc2626);
+            border-color: transparent;
+        }
+
+        /* Floating particles for GK Theme */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.2);
+            animation: float 15s infinite linear;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+        }
+
+        .slide-up { animation: slideUp 0.5s ease forwards; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden-screen { display: none !important; }
+
+        /* Certificate Styles */
+        #certificate-container {
+            background: white;
+            color: #1a1a1a;
+            width: 800px;
+            padding: 40px;
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .cert-border {
+            border: 10px solid #064e3b;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .cert-inner-border {
+            border: 2px solid #10b981;
+            padding: 40px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="relative min-h-screen flex flex-col">
+
+    <!-- Background Particles -->
+    <div id="particles" class="fixed inset-0 overflow-hidden pointer-events-none z-0"></div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="relative z-10 flex-grow flex flex-col container mx-auto px-4 py-8 max-w-4xl">
+        
+        <!-- HEADER -->
+        <header class="flex justify-between items-center mb-8 glass-panel p-4 slide-up">
+            <div class="flex items-center gap-4">
+                <div class="bg-white/20 p-3 rounded-full">
+                    <i class="fas fa-globe-asia text-2xl text-emerald-400"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wider">ROSE BUDS ENGLISH SCHOOL</h1>
+                    <p class="text-sm text-gray-300">Class VIII • Half-Yearly GK Exam</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- SCREEN 1: LOGIN -->
+        <div id="login-screen" class="glass-panel p-8 max-w-md mx-auto w-full slide-up mt-10">
+            <div class="text-center mb-8">
+                <i class="fas fa-brain text-5xl text-emerald-400 mb-4"></i>
+                <h2 class="text-2xl font-bold">Student Portal</h2>
+                <p class="text-gray-300 mt-2">Enter your details to start the exam</p>
+            </div>
+            
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm mb-1 text-gray-300">Full Name</label>
+                    <input type="text" id="student-name" required class="glass-input w-full p-3 rounded-lg" placeholder="Enter your name">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm mb-1 text-gray-300">Section</label>
+                        <input type="text" id="student-section" required class="glass-input w-full p-3 rounded-lg" placeholder="A, B, C...">
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1 text-gray-300">Roll Number</label>
+                        <input type="number" id="student-roll" required class="glass-input w-full p-3 rounded-lg" placeholder="Roll No.">
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary w-full py-4 rounded-lg font-bold text-lg mt-6 shadow-lg">
+                    Start Examination <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- SCREEN 2: QUIZ INTERFACE -->
+        <div id="quiz-screen" class="hidden-screen flex-grow flex flex-col slide-up">
+            
+            <!-- Dashboard Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="glass-panel p-3 text-center">
+                    <p class="text-xs text-gray-400 uppercase tracking-wider">Progress</p>
+                    <p class="text-lg font-bold"><span id="current-q-num">1</span> / 45</p>
+                </div>
+                <div class="glass-panel p-3 text-center">
+                    <p class="text-xs text-gray-400 uppercase tracking-wider">Time Remaining</p>
+                    <p class="text-lg font-bold text-emerald-400" id="timer-display">60:00</p>
+                </div>
+                <div class="glass-panel p-3 text-center">
+                    <p class="text-xs text-gray-400 uppercase tracking-wider">Score</p>
+                    <p class="text-lg font-bold text-green-400"><span id="score-display">0</span> / 45</p>
+                </div>
+                <div class="glass-panel p-3 text-center">
+                    <p class="text-xs text-gray-400 uppercase tracking-wider">XP Earned</p>
+                    <p class="text-lg font-bold text-yellow-400" id="xp-display">0 XP</p>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-white/10 h-2 rounded-full mb-8 overflow-hidden">
+                <div id="progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-amber-500 transition-all duration-300" style="width: 0%"></div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="glass-panel p-6 md:p-10 mb-6 relative overflow-hidden flex-grow flex flex-col justify-center">
+                <div class="absolute top-0 right-0 bg-white/10 px-4 py-1 rounded-bl-xl text-sm text-gray-300" id="q-category">
+                    Section A
+                </div>
+                
+                <h3 class="text-xl md:text-2xl font-medium mb-8 leading-relaxed" id="question-text">
+                    Loading question...
+                </h3>
+
+                <!-- Dynamic Input Area -->
+                <div id="answer-area" class="w-full max-w-2xl mx-auto space-y-4">
+                    <!-- Injected via JS -->
+                </div>
+
+                <!-- Feedback Area -->
+                <div id="feedback-area" class="mt-6 text-center min-h-[40px] font-bold text-lg hidden transition-all duration-300"></div>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex justify-between items-center">
+                <button id="btn-submit-text" class="hidden btn-primary px-8 py-3 rounded-lg font-bold shadow-lg">Submit Answer</button>
+                <button id="btn-next" class="hidden ml-auto btn-primary px-8 py-3 rounded-lg font-bold shadow-lg">
+                    Next Question <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: RESULTS & CERTIFICATE -->
+        <div id="result-screen" class="hidden-screen glass-panel p-8 max-w-2xl mx-auto w-full slide-up text-center">
+            <i class="fas fa-trophy text-6xl text-amber-400 mb-4"></i>
+            <h2 class="text-3xl font-bold mb-2">Examination Completed!</h2>
+            <p class="text-gray-300 mb-8" id="result-student-name">Student Name</p>
+
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <div class="bg-white/10 p-4 rounded-xl border border-white/20">
+                    <p class="text-sm text-gray-400">Final Score</p>
+                    <p class="text-3xl font-bold text-white"><span id="final-score">0</span> / 45</p>
+                </div>
+                <div class="bg-white/10 p-4 rounded-xl border border-white/20">
+                    <p class="text-sm text-gray-400">Percentage</p>
+                    <p class="text-3xl font-bold text-emerald-400"><span id="final-percentage">0</span>%</p>
+                </div>
+                <div class="bg-white/10 p-4 rounded-xl border border-white/20">
+                    <p class="text-sm text-gray-400">Total XP</p>
+                    <p class="text-3xl font-bold text-yellow-400" id="final-xp">0</p>
+                </div>
+                <div class="bg-white/10 p-4 rounded-xl border border-white/20">
+                    <p class="text-sm text-gray-400">Performance</p>
+                    <p class="text-xl font-bold text-green-400 mt-2" id="final-grade">Excellent</p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <button id="btn-download-cert" class="btn-primary w-full py-4 rounded-lg font-bold text-lg shadow-lg flex items-center justify-center gap-2">
+                    <i class="fas fa-file-download"></i> Download Certificate
+                </button>
+                <button id="btn-restart" class="bg-white/10 hover:bg-white/20 transition border border-white/20 w-full py-4 rounded-lg font-bold text-lg shadow-lg">
+                    Return to Home
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Certificate Template -->
+    <div id="certificate-container">
+        <div class="cert-border">
+            <div class="cert-inner-border">
+                <h1 style="font-size: 32px; font-weight: bold; color: #064e3b; margin-bottom: 10px;">ROSE BUDS ENGLISH SCHOOL</h1>
+                <h2 style="font-size: 20px; color: #10b981; margin-bottom: 30px;">CHITRAGUPT NAGAR, CLUB ROAD, AURANGABAD, BIHAR</h2>
+                
+                <h3 style="font-size: 28px; font-weight: bold; margin-bottom: 40px; text-decoration: underline;">CERTIFICATE OF ACHIEVEMENT</h3>
+                
+                <p style="font-size: 18px; margin-bottom: 15px;">This is to certify that</p>
+                <h2 style="font-size: 36px; font-weight: bold; color: #f59e0b; margin-bottom: 15px; border-bottom: 2px solid #ccc; display: inline-block; padding: 0 20px;" id="cert-name">Student Name</h2>
+                
+                <p style="font-size: 18px; margin-bottom: 10px;">Class: VIII | Section: <span id="cert-section"></span> | Roll No: <span id="cert-roll"></span></p>
+                <p style="font-size: 18px; margin-bottom: 30px;">has successfully completed the Half-Yearly General Knowledge (GK) Examination (2026-2027).</p>
+                
+                <div style="background: #f0fdf4; padding: 20px; border-radius: 10px; display: inline-block; margin-bottom: 40px; border: 1px solid #10b981;">
+                    <p style="font-size: 24px; font-weight: bold; margin: 0; color: #064e3b;">Score: <span id="cert-score"></span>/45 (<span id="cert-percent"></span>%)</p>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-top: 50px; padding: 0 40px;">
+                    <div style="text-align: center;">
+                        <div style="border-bottom: 1px solid #000; width: 150px; margin-bottom: 5px;"></div>
+                        <p>Date</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="border-bottom: 1px solid #000; width: 150px; margin-bottom: 5px; font-family: cursive;">Kishan Sir</div>
+                        <p>Teacher / Principal</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. GK EXAM DATA (ALL OBJECTIVE QUESTIONS SECTIONS A, B, C, D) ---
+        const quizData = [
+            // SECTION A: Multiple Choice Questions
+            { id: 1, section: "Section A: Multiple Choice", text: "Guru of the Pandavas?", type: "mcq", options: ["Kripacharya", "Dronacharya", "Shukracharya"], answer: "Dronacharya" },
+            { id: 2, section: "Section A: Multiple Choice", text: "New kingdom built by the Pandavas?", type: "mcq", options: ["Hastinapur", "Indraprastha", "Ayodhya"], answer: "Indraprastha" },
+            { id: 3, section: "Section A: Multiple Choice", text: "Character also known as a Radheya?", type: "mcq", options: ["Arjuna", "Sahadeva", "Karna"], answer: "Karna" },
+            { id: 4, section: "Section A: Multiple Choice", text: "How many days did the Mahabharata war last?", type: "mcq", options: ["18", "21", "40"], answer: "18" },
+            { id: 5, section: "Section A: Multiple Choice", text: "Which Pandava was the son of Dharma?", type: "mcq", options: ["Nakula", "Arjuna", "Yudhisthira"], answer: "Yudhisthira" },
+            { id: 6, section: "Section A: Multiple Choice", text: "What was the name of Ravana's wife?", type: "mcq", options: ["Uma", "Gandhari", "Mandodari"], answer: "Mandodari" },
+            { id: 7, section: "Section A: Multiple Choice", text: "Who was the advisor to King Dhritrashtra?", type: "mcq", options: ["Drupada", "Vidura", "Kansa"], answer: "Vidura" },
+            { id: 8, section: "Section A: Multiple Choice", text: "Which colour is generally used in school buses?", type: "mcq", options: ["Red", "Blue", "Yellow"], answer: "Yellow" },
+            { id: 9, section: "Section A: Multiple Choice", text: "What do you understand by power brakes?", type: "mcq", options: ["Keep dist.", "Apply sudden", "Drive slow"], answer: "Apply sudden" },
+            { id: 10, section: "Section A: Multiple Choice", text: "What is a subway?", type: "mcq", options: ["Parking", "Sub-officer", "Under passa..."], answer: "Under passa..." },
+            { id: 11, section: "Section A: Multiple Choice", text: "Pedestrian crossing means:", type: "mcq", options: ["Cars ban", "No vehicles", "Only footers"], answer: "Only footers" },
+            { id: 12, section: "Section A: Multiple Choice", text: "Honking in front of a hospital is:", type: "mcq", options: ["Nice habit", "An offense", "Must do"], answer: "An offense" },
+            { id: 13, section: "Section A: Multiple Choice", text: "Where is retro-reflective tape used on vehicles?", type: "mcq", options: ["In front", "At back", "On top"], answer: "At back" },
+            { id: 14, section: "Section A: Multiple Choice", text: "The first road signs were designed for:", type: "mcq", options: ["Cars", "Cyclists", "Pedestrians"], answer: "Cyclists" },
+            { id: 15, section: "Section A: Multiple Choice", text: "What does the 'Men at work' sign indicate?", type: "mcq", options: ["Work in prog", "No horn", "Speed limit"], answer: "Work in prog" },
+
+            // SECTION B: Match the Columns (Presented as MCQs using Column B options)
+            { id: 16, section: "Section B: Match the Phrase/Definition", text: "Match: 'The pen is mightier than the sword.'", type: "mcq", options: ["Action speaks louder than words.", "Fools seldom differ.", "Speech is silver.", "Money is not everything."], answer: "Action speaks louder than words." },
+            { id: 17, section: "Section B: Match the Phrase/Definition", text: "Match: 'Wise men think alike.'", type: "mcq", options: ["Fools seldom differ.", "The bigger is better.", "Speech is silver.", "Money is not everything."], answer: "Fools seldom differ." },
+            { id: 18, section: "Section B: Match the Phrase/Definition", text: "Match: 'Silence is golden.'", type: "mcq", options: ["Action speaks louder than words.", "Speech is silver.", "Fools seldom differ.", "The bigger is better."], answer: "Speech is silver." },
+            { id: 19, section: "Section B: Match the Phrase/Definition", text: "Match: 'Money is power.'", type: "mcq", options: ["Money is not everything.", "Action speaks louder than words.", "The bigger is better.", "Speech is silver."], answer: "Money is not everything." },
+            { id: 20, section: "Section B: Match the Phrase/Definition", text: "Match: 'Good things come in small packages.'", type: "mcq", options: ["Fools seldom differ.", "Action speaks louder than words.", "The bigger is better.", "Money is not everything."], answer: "The bigger is better." },
+            { id: 21, section: "Section B: Match the Phrase/Definition", text: "Match: 'Income tax'", type: "mcq", options: ["Reduction of the general level of prices in an economy.", "A tax paid to the government based on profit one makes.", "Money that is owed to someone else.", "The price of one currency in terms of another currency."], answer: "A tax paid to the government based on profit one makes." },
+            { id: 22, section: "Section B: Match the Phrase/Definition", text: "Match: 'EMI'", type: "mcq", options: ["An amount one needs to pay every month towards repayment.", "Money that is owed to someone else.", "Reduction of the general level of prices in an economy.", "A tax paid to the government based on profit one makes."], answer: "An amount one needs to pay every month towards repayment." },
+            { id: 23, section: "Section B: Match the Phrase/Definition", text: "Match: 'Deflation'", type: "mcq", options: ["An amount one needs to pay every month towards repayment.", "The price of one currency in terms of another currency.", "Reduction of the general level of prices in an economy.", "Money that is owed to someone else."], answer: "Reduction of the general level of prices in an economy." },
+            { id: 24, section: "Section B: Match the Phrase/Definition", text: "Match: 'Debt'", type: "mcq", options: ["Money that is owed to someone else.", "A tax paid to the government based on profit one makes.", "Reduction of the general level of prices in an economy.", "An amount one needs to pay every month towards repayment."], answer: "Money that is owed to someone else." },
+            { id: 25, section: "Section B: Match the Phrase/Definition", text: "Match: 'Exchange rate'", type: "mcq", options: ["Reduction of the general level of prices in an economy.", "The price of one currency in terms of another currency.", "Money that is owed to someone else.", "A tax paid to the government based on profit one makes."], answer: "The price of one currency in terms of another currency." },
+
+            // SECTION C: True or False
+            { id: 26, section: "Section C: True or False", text: "'Go!' is the shortest sentence.", type: "mcq", options: ["TRUE", "FALSE"], answer: "TRUE" },
+            { id: 27, section: "Section C: True or False", text: "'Pangram' contains 26 letters.", type: "mcq", options: ["TRUE", "FALSE"], answer: "TRUE" },
+            { id: 28, section: "Section C: True or False", text: "Prepositions followed by verb.", type: "mcq", options: ["TRUE", "FALSE"], answer: "FALSE" },
+            { id: 29, section: "Section C: True or False", text: "Musk deer live in desert areas.", type: "mcq", options: ["TRUE", "FALSE"], answer: "FALSE" },
+            { id: 30, section: "Section C: True or False", text: "Mango is rich in Vit A, C, K.", type: "mcq", options: ["TRUE", "FALSE"], answer: "TRUE" },
+            { id: 31, section: "Section C: True or False", text: "Butterfly's original name was 'flutterby'.", type: "mcq", options: ["TRUE", "FALSE"], answer: "TRUE" },
+            { id: 32, section: "Section C: True or False", text: "Papaya is native to S. Mexico.", type: "mcq", options: ["TRUE", "FALSE"], answer: "TRUE" },
+            { id: 33, section: "Section C: True or False", text: "Toy guns raise violent mindset.", type: "mcq", options: ["TRUE", "FALSE"], answer: "TRUE" },
+            { id: 34, section: "Section C: True or False", text: "Arriving 30 min early is good.", type: "mcq", options: ["TRUE", "FALSE"], answer: "FALSE" },
+            { id: 35, section: "Section C: True or False", text: "Ahimsa is a virtue in Jainism.", type: "mcq", options: ["TRUE", "FALSE"], answer: "TRUE" },
+
+            // SECTION D: Vocab (Anagrams) & Social (Etiquette)
+            { id: 36, section: "Section D: Vocab (Anagram)", text: "Spicy dish: (urrcy)", type: "text", answer: ["curry"] },
+            { id: 37, section: "Section D: Vocab (Anagram)", text: "Scholar/Priest: (tinapd)", type: "text", answer: ["pandit"] },
+            { id: 38, section: "Section D: Vocab (Anagram)", text: "Hindu workout: (agyo)", type: "text", answer: ["yoga"] },
+            { id: 39, section: "Section D: Vocab (Anagram)", text: "Spiritual leader: (uugr)", type: "text", answer: ["guru"] },
+            { id: 40, section: "Section D: Vocab (Anagram)", text: "Formula for success: (aamntr)", type: "text", answer: ["mantra"] },
+            { id: 41, section: "Section D: Social Etiquette", text: "Female party host:", type: "mcq", options: ["HOSTESS", "INVITER"], answer: "HOSTESS" },
+            { id: 42, section: "Section D: Social Etiquette", text: "Post wedding party:", type: "mcq", options: ["RECEPTION", "PARTY"], answer: "RECEPTION" },
+            { id: 43, section: "Section D: Social Etiquette", text: "Everyday dress code:", type: "mcq", options: ["CASUAL", "FORMAL"], answer: "CASUAL" },
+            { id: 44, section: "Section D: Social Etiquette", text: "Talk softly at party?", type: "mcq", options: ["YES", "NO"], answer: "YES" },
+            { id: 45, section: "Section D: Social Etiquette", text: "Loud phone ringtones?", type: "mcq", options: ["YES", "NO"], answer: "NO" }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let xp = 0;
+        let timeLeft = 60 * 60; // 60 minutes
+        let timerInterval;
+        let studentData = {};
+        let isAnswered = false;
+
+        const screens = {
+            login: document.getElementById('login-screen'),
+            quiz: document.getElementById('quiz-screen'),
+            result: document.getElementById('result-screen')
+        };
+        const answerArea = document.getElementById('answer-area');
+        const feedbackArea = document.getElementById('feedback-area');
+        const btnNext = document.getElementById('btn-next');
+        const btnSubmitText = document.getElementById('btn-submit-text');
+
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 35; i++) {
+                let div = document.createElement('div');
+                div.className = 'particle';
+                let size = Math.random() * 8 + 4;
+                div.style.width = size + 'px';
+                div.style.height = size + 'px';
+                div.style.left = Math.random() * 100 + 'vw';
+                div.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                div.style.animationDelay = (Math.random() * 5) + 's';
+                container.appendChild(div);
+            }
+        }
+        createParticles();
+
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            studentData = {
+                name: document.getElementById('student-name').value,
+                section: document.getElementById('student-section').value,
+                roll: document.getElementById('student-roll').value
+            };
+            startQuiz();
+        });
+
+        function switchScreen(screenKey) {
+            Object.values(screens).forEach(s => s.classList.add('hidden-screen'));
+            screens[screenKey].classList.remove('hidden-screen');
+        }
+
+        function startQuiz() {
+            switchScreen('quiz');
+            startTimer();
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            isAnswered = false;
+            btnNext.classList.add('hidden');
+            feedbackArea.classList.add('hidden');
+            
+            const q = quizData[currentQuestionIndex];
+            
+            document.getElementById('current-q-num').innerText = currentQuestionIndex + 1;
+            document.getElementById('q-category').innerText = q.section;
+            document.getElementById('question-text').innerText = `Q${currentQuestionIndex + 1}. ${q.text}`;
+            document.getElementById('progress-bar').style.width = `${((currentQuestionIndex) / quizData.length) * 100}%`;
+
+            answerArea.innerHTML = '';
+
+            if (q.type === 'mcq') {
+                btnSubmitText.classList.add('hidden');
+                q.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-option w-full p-4 rounded-xl text-left text-lg font-medium shadow-sm block';
+                    btn.innerText = opt;
+                    btn.onclick = () => handleMCQAnswer(btn, opt, q.answer);
+                    answerArea.appendChild(btn);
+                });
+            } else if (q.type === 'text') {
+                btnSubmitText.classList.remove('hidden');
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = 'text-answer-input';
+                input.className = 'glass-input w-full p-4 rounded-xl text-lg font-medium text-center uppercase tracking-widest';
+                input.placeholder = 'Type decoded word...';
+                input.autocomplete = 'off';
+                
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') btnSubmitText.click();
+                });
+                
+                answerArea.appendChild(input);
+                
+                const newSubmitBtn = btnSubmitText.cloneNode(true);
+                btnSubmitText.parentNode.replaceChild(newSubmitBtn, btnSubmitText);
+                
+                newSubmitBtn.onclick = () => {
+                    const userVal = document.getElementById('text-answer-input').value;
+                    if(!userVal.trim()) return; 
+                    handleTextAnswer(userVal, q.answer);
+                };
+            }
+        }
+
+        function normalizeString(str) {
+            return str.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"").trim();
+        }
+
+        function handleMCQAnswer(selectedBtn, selectedOpt, correctOpt) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const buttons = answerArea.querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+
+            const isCorrect = selectedOpt === correctOpt;
+            selectedBtn.classList.add(isCorrect ? 'correct' : 'wrong');
+
+            if (!isCorrect) {
+                buttons.forEach(b => {
+                    if (b.innerText === correctOpt) b.classList.add('correct');
+                });
+            }
+
+            processResult(isCorrect, correctOpt);
+        }
+
+        function handleTextAnswer(userAns, correctAnsArray) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const inputField = document.getElementById('text-answer-input');
+            inputField.disabled = true;
+            document.getElementById('btn-submit-text').classList.add('hidden');
+
+            const normalizedUser = normalizeString(userAns);
+            let isCorrect = false;
+            let displayCorrect = correctAnsArray[0];
+
+            for (let ans of correctAnsArray) {
+                if (normalizedUser === normalizeString(ans)) {
+                    isCorrect = true;
+                    displayCorrect = ans;
+                    break;
+                }
+            }
+
+            if(isCorrect) {
+                inputField.style.borderColor = '#10b981';
+                inputField.style.color = '#10b981';
+            } else {
+                inputField.style.borderColor = '#ef4444';
+                inputField.style.color = '#ef4444';
+            }
+
+            processResult(isCorrect, displayCorrect);
+        }
+
+        function processResult(isCorrect, correctAnsText) {
+            feedbackArea.classList.remove('hidden');
+            
+            if (isCorrect) {
+                score++;
+                xp += 10;
+                document.getElementById('score-display').innerText = score;
+                document.getElementById('xp-display').innerText = xp + ' XP';
+                feedbackArea.innerHTML = `<span class="text-green-400"><i class="fas fa-check-circle mr-2"></i> Correct! +10 XP</span>`;
+            } else {
+                feedbackArea.innerHTML = `<span class="text-red-400"><i class="fas fa-times-circle mr-2"></i> Incorrect. Correct Answer: <span class="text-white capitalize">${correctAnsText}</span></span>`;
+            }
+
+            btnNext.classList.remove('hidden');
+        }
+
+        btnNext.addEventListener('click', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                endQuiz();
+            }
+        });
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endQuiz();
+                    return;
+                }
+                timeLeft--;
+                const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+                const s = (timeLeft % 60).toString().padStart(2, '0');
+                document.getElementById('timer-display').innerText = `${m}:${s}`;
+                
+                if(timeLeft <= 300) {
+                    document.getElementById('timer-display').classList.add('text-red-500', 'animate-pulse');
+                }
+            }, 1000);
+        }
+
+        function endQuiz() {
+            clearInterval(timerInterval);
+            switchScreen('result');
+            
+            const percentage = Math.round((score / quizData.length) * 100);
+            document.getElementById('result-student-name').innerText = `${studentData.name} | Class VIII-${studentData.section} | Roll: ${studentData.roll}`;
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-percentage').innerText = percentage;
+            document.getElementById('final-xp').innerText = xp;
+            
+            let gradeText = "";
+            let gradeColor = "";
+            if(percentage >= 90) { gradeText = "Outstanding!"; gradeColor = "text-green-400"; }
+            else if(percentage >= 75) { gradeText = "Very Good!"; gradeColor = "text-emerald-400"; }
+            else if(percentage >= 50) { gradeText = "Good Effort"; gradeColor = "text-yellow-400"; }
+            else { gradeText = "Needs Practice"; gradeColor = "text-red-400"; }
+            
+            const gradeEl = document.getElementById('final-grade');
+            gradeEl.innerText = gradeText;
+            gradeEl.className = `text-xl font-bold mt-2 ${gradeColor}`;
+        }
+
+        document.getElementById('btn-download-cert').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-download-cert');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+            btn.disabled = true;
+
+            document.getElementById('cert-name').innerText = studentData.name.toUpperCase();
+            document.getElementById('cert-section').innerText = studentData.section;
+            document.getElementById('cert-roll').innerText = studentData.roll;
+            document.getElementById('cert-score').innerText = score;
+            document.getElementById('cert-percent').innerText = Math.round((score / quizData.length) * 100);
+
+            try {
+                const certNode = document.getElementById('certificate-container');
+                const canvas = await html2canvas(certNode, { scale: 2 });
+                const imgData = canvas.toDataURL('image/png');
+                
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'px',
+                    format: [canvas.width, canvas.height]
+                });
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+                pdf.save(`${studentData.name.replace(/\s+/g, '_')}_GK_Certificate.pdf`);
+                
+            } catch (err) {
+                console.error("PDF generation failed:", err);
+                alert("Failed to generate certificate. Please try again.");
+            }
+
+            btn.innerHTML = '<i class="fas fa-file-download"></i> Download Certificate';
+            btn.disabled = false;
+        });
+
+        document.getElementById('btn-restart').addEventListener('click', () => {
+            location.reload();
+        });
+    </script>
+</body>
+</html>
